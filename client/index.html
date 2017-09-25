@@ -2,12 +2,94 @@
 <html lang="en">
 <head>
     <script src="https://npmcdn.com/babel-core@5.8.38/browser.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
     <script type="text/babel" >
         "use strict";
+
+        let socket;
+        let canvas;
+        let ctx;
+        let draws = [];
+        let user;
+
+        const init = () => {
+          
+          canvas = document.querySelector("#mainCanvas");
+		  ctx = canvas.getContext('2d');
+          
+          socket = io.connect();
+          
+          setupSocket();
+          
+          // square will move 5 pixels every 3 seconds
+          setInterval( () => {
+            const time = new Date().getTime();
+            
+            draws[user].lastUpdate = time;
+            draws[user].x += 5;
+            socket.emit('updateSquare', {name:user, coords: draws[user]});
+            
+            draw();
+          }, 3000);
+        };
+        
+        window.onload = init;
+
+        const setupSocket = () => {
+          
+          /*const time = new Date().getTime();
+          let x = Math.floor(Math.random()*(300-10)+10);
+          let y = Math.floor(Math.random()*(300-10)+10);
+          draws[user] = {lastUpdate: time, x: x, y: y, width:100, height: 100};*/
+          
+          user = Math.floor((Math.random()*1000)) + 1;
+          socket.emit('join', {'joined': true, 'user': user});
+          
+          socket.on('initialData', (data) => {
+            console.log(draws);
+            draws = data.drawData;
+            console.log(draws);
+          });
+          
+          socket.on('addToDraw', (data) => {
+            draws[data.user] = data.coords;
+            draw();
+          });
+          
+          socket.on('updateUserInfo', (data) => {
+            if(!draws[data.user]) { // new user
+              draws[data.user] = data.coords;
+            }else if(data.coords.lastUpdate > draws[data.user].lastUpdate) { // old user, new info
+              draws[data.user] = data.coords;
+            }
+            
+            draw();
+          });
+        };
+
+        
+
+        const draw = () => {
+          console.log(`trying to draw...`);
+          console.log(draws);
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          
+          let keysOfDraws = Object.keys(draws);
+          
+          ctx.fillStyle = 'black';
+          
+          for(let i = 0; i < keysOfDraws.length; i++) {
+            const drawCall = draws[keysOfDraws[i]];
+            ctx.fillRect(drawCall.x, drawCall.y, drawCall.width, drawCall.height);
+            ctx.fillStyle = 'red';
+          }
+        };
     
     </script>
 </head>
 <body>
-
+  <canvas id="mainCanvas" width="700" height="500">
+	Cannot create canvas element...
+	</canvas>
 </body>
 </html>

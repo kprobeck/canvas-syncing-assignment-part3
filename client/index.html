@@ -5,13 +5,11 @@
     <script src="/socket.io/socket.io.js"></script>
     <script type="text/babel" >
         "use strict";
-
         let socket;
         let canvas;
         let ctx;
         let draws = [];
         let user;
-
         const init = () => {
           
           canvas = document.querySelector("#mainCanvas");
@@ -34,7 +32,6 @@
         };
         
         window.onload = init;
-
         const setupSocket = () => {
           
           /*const time = new Date().getTime();
@@ -46,9 +43,7 @@
           socket.emit('join', {'joined': true, 'user': user});
           
           socket.on('initialData', (data) => {
-            console.log(draws);
             draws = data.drawData;
-            console.log(draws);
           });
           
           socket.on('addToDraw', (data) => {
@@ -57,18 +52,10 @@
           });
           
           socket.on('updateUserInfo', (data) => {
-            if(!draws[data.user]) { // new user
-              draws[data.user] = data.coords;
-            }else if(data.coords.lastUpdate > draws[data.user].lastUpdate) { // old user, new info
-              draws[data.user] = data.coords;
-            }
-            
-            draw();
+            draws = data.squaresData;
           });
         };
-
         
-
         const draw = () => {
           console.log(`trying to draw...`);
           console.log(draws);

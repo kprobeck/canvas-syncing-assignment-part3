@@ -19,7 +19,7 @@ console.log(`Listening on 127.0.0.1 ${port}`);
 // pass in the http server into socketio and grab websocket as io
 const io = socketio(app);
 
-const draws = [{ x: 0, y: 0, width: 100, height: 100 }];
+const draws = {};
 
 // function to generate a new square when a new user joins
 const generateSquare = (user) => {
@@ -59,13 +59,13 @@ const onMsg = (sock) => {
   const socket = sock;
 
   socket.on('updateSquare', (data) => {
-    if (!draws[data.user]) { // new user
-      draws[data.user] = data.coords;
-    } else if (data.coords.lastUpdate > draws[data.user].lastUpdate) { // old user, new info
-      draws[data.user] = data.coords;
+    if (!draws[data.name]) { // new user
+      draws[data.name] = data.coords;
+    } else if (data.coords.lastUpdate > draws[data.name].lastUpdate) { // old user, new info
+      draws[data.name] = data.coords;
     }
 
-    io.sockets.in('room1').emit('updateUserInfo', { user: data.user, coords: data.coords });
+    io.sockets.in('room1').emit('updateUserInfo', { squaresData: draws });
   });
 };
 
